@@ -3,7 +3,7 @@ Rust-based tools inspired by ZSecurity's Python programs from their "Learn Pytho
 
 I am using these as a path to learn Rust, and make it applicable. These will be updated as I make progress in getting them working.
 
-# mac-changer 
+## mac-changer 
   Change the MAC address of a given interface.
 
   Usage: mac-changer --interface <INTERFACE> --maddr <MADDR>
