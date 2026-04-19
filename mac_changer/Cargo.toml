@@ -5,4 +5,4 @@ edition = "2024"
 
 [dependencies]
 subprocess = "1.0.3"
-optparse = "0.1.0"
+clap = { version = "4.6.1", features = ["derive"] }
