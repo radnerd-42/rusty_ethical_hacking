@@ -4,20 +4,33 @@
 //like the original flow from ZSecurity.
 
 use subprocess::Exec;
-//use optparse
+use clap::Parser;
+
+#[derive(Parser, Debug)]
+#[command(version, about, long_about = None)]
+struct Args {
+    ///Interface to change
+    #[arg(short, long)]
+    interface: String,
+
+    ///New MAC address to assign
+    #[arg(short, long)]
+    maddr: String,
+}
 
 fn main() {
     //Interface to change and the address to change it to.
-    let interface = "eth0";
-    let new_mac = "00:11:22:33:44:55";
+    let argus = Args::parse();
 
-    println!("Changing MAC address for {}.", interface);
+    println!("Changing MAC address for {}.", &argus.interface);
 
-    let ch_mac_process = vec![Exec::cmd("sudo").args(&["ip", "link", "set", interface, "down"]),
-        Exec::cmd("sudo").args(&["ip", "link", "set", interface, "address", new_mac]),
-        Exec::cmd("sudo").args(&["ip", "link", "set", interface, "up"])
+    //Commands to execute, take down the interface, change the MAC and bring it back up
+    let ch_mac_process = vec![Exec::cmd("sudo").args(&["ip", "link", "set", &argus.interface, "down"]),
+        Exec::cmd("sudo").args(&["ip", "link", "set", &argus.interface, "address", &argus.maddr]),
+        Exec::cmd("sudo").args(&["ip", "link", "set", &argus.interface, "up"])
     ];
-
+    
+    //Iterate through the commands, and return status
     for (i, cmd) in ch_mac_process.into_iter().enumerate() {
         match cmd.join() {
             Ok(status) if status.success() => {
@@ -33,5 +46,6 @@ fn main() {
             }
         }
     }
-    println!("Changed {} MAC address to {}.", interface, new_mac);
+
+    println!("Changed {} MAC address to {}.", &argus.interface, &argus.maddr);
 }
