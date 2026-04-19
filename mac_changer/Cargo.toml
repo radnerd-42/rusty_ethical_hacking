@@ -1,0 +1,8 @@
+[package]
+name = "mac-changer"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+subprocess = "1.0.3"
+optparse = "0.1.0"
