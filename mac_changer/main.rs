@@ -22,9 +22,21 @@ fn main() {
     //Interface to change and the address to change it to.
     let argus = Args::parse();
 
-    println!("Changing MAC address for {}.", &argus.interface);
+    //Determine current MAC address to compare at the end.
+    let old_int = Exec::cmd("ip")
+        .args(&["address", "show", "dev", &argus.interface])
+        .capture()
+        .expect("Could not find the interface.")
+        .stdout_str();
+    let old_mac = old_int
+        .lines()
+        .find(|line| line.contains("link/ether"))
+        .and_then(|line| line.split_whitespace().nth(1))
+        .expect("Could not find MAC address in output.");
 
-    //Commands to execute, take down the interface, change the MAC and bring it back up
+    println!("Changing MAC  address ({0}) for {1}.", old_mac, &argus.interface);
+
+    //Commands to execute: take down the interface, change the MAC and bring it back up
     let ch_mac_process = vec![Exec::cmd("sudo").args(&["ip", "link", "set", &argus.interface, "down"]),
         Exec::cmd("sudo").args(&["ip", "link", "set", &argus.interface, "address", &argus.maddr]),
         Exec::cmd("sudo").args(&["ip", "link", "set", &argus.interface, "up"])
@@ -47,5 +59,24 @@ fn main() {
         }
     }
 
-    println!("Changed {} MAC address to {}.", &argus.interface, &argus.maddr);
+    //Determine the MAC address after changing, as above for comparison.
+    let new_int = Exec::cmd("ip")
+        .args(&["address", "show", "dev", &argus.interface])
+        .capture()
+        .expect("Could not find the interface.")
+        .stdout_str();
+    let new_mac = new_int
+        .lines()
+        .find(|line| line.contains("link/ether"))
+        .and_then(|line| line.split_whitespace().nth(1))
+        .expect("Could not find MAC address in output.");
+    
+    //Commpare old MAC to new MAC, and new MAC to provided MAC before declaring success.
+    if old_mac != new_mac {
+        if new_mac == &argus.maddr {
+            println!("Changed {} MAC address to {}.", &argus.interface, &argus.maddr);
+        } else {
+            println!("Failed to change the MAC address for {}.", &argus.interface);
+        }
+    }
 }
